@@ -1,0 +1,24 @@
+const {test,expect}=require('@playwright/test');
+const {ShopPage}=require('./pages/ShopPage');
+test('checkout validates promo codes and preserves delivery selections',async({page})=>{
+ const shop=new ShopPage(page);
+ await shop.open();await shop.addProduct(0);await shop.openBag();
+ await page.getByTestId('checkout').click();
+ await page.getByTestId('country').selectOption('India');
+ await page.getByTestId('terms').check();
+ await page.getByTestId('apply-promo').click();
+ await expect(page.getByTestId('promo-message')).toHaveText('Enter a promo code.');
+ await page.getByTestId('promo-code').fill('INVALID');
+ await page.getByTestId('apply-promo').click();
+ await expect(page.getByTestId('promo-message')).toHaveText('Invalid promo code. Please try again.');
+ await expect(page.getByTestId('order-total')).toHaveText('₹120');
+ await page.getByTestId('promo-code').fill(' fresh10 ');
+ await page.getByTestId('promo-code').press('Enter');
+ await expect(page.getByTestId('promo-message')).toHaveText('FRESH10 applied. You saved ₹12 (10% off).');
+ await expect(page.getByTestId('order-total')).toHaveText('₹108');
+ await expect(page.getByTestId('apply-promo')).toBeDisabled();
+ await expect(page.getByTestId('country')).toHaveValue('India');
+ await expect(page.getByTestId('terms')).toBeChecked();
+ await page.getByTestId('place-order').click();
+ await expect(page.getByTestId('order-confirmation')).toContainText('₹108');
+});

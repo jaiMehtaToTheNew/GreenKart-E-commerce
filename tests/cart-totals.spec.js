@@ -1,0 +1,28 @@
+const {test,expect}=require('@playwright/test');
+const {ShopPage}=require('./pages/ShopPage');
+test('cart count and totals update while typing, with discounts and removal',async({page})=>{
+ const shop=new ShopPage(page);
+ await shop.open();await shop.addProduct(0);await shop.addProduct(1);await shop.openBag();
+ await expect(page.locator('#badge')).toHaveText('2');
+ await expect(page.locator('#headerTotal')).toHaveText('₹300');
+ const quantity=page.getByRole('spinbutton',{name:'Broccoli quantity'});
+ await quantity.fill('3');
+ await expect(quantity).toBeFocused();
+ await expect(page.locator('#badge')).toHaveText('4');
+ await expect(page.locator('#headerTotal')).toHaveText('₹540');
+ await expect(page.getByTestId('order-total')).toHaveText('₹540');
+ await expect(page.locator('[data-line-total="0"]')).toHaveText('₹360');
+ await quantity.press('Tab');
+ await page.getByRole('textbox',{name:'Promo code'}).fill('FRESH10');
+ await page.getByRole('button',{name:'Apply',exact:true}).click();
+ await page.getByRole('spinbutton',{name:'Broccoli quantity'}).fill('2');
+ await expect(page.locator('#badge')).toHaveText('3');
+ await expect(page.locator('#headerTotal')).toHaveText('₹378');
+ await expect(page.getByTestId('order-total')).toHaveText('₹378');
+ await page.getByRole('button',{name:'Remove Strawberries'}).click();
+ await expect(page.locator('#badge')).toHaveText('2');
+ await expect(page.getByTestId('order-total')).toHaveText('₹216');
+ await page.getByRole('button',{name:'Remove Broccoli'}).click();
+ await expect(page.locator('#badge')).toHaveText('0');
+ await expect(page.locator('#headerTotal')).toHaveText('₹0');
+});

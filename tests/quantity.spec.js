@@ -1,0 +1,21 @@
+const {test,expect}=require('@playwright/test');
+const {ShopPage}=require('./pages/ShopPage');
+test('SAM1-18: select a quantity and validate cart edits',async({page})=>{
+ const shop=new ShopPage(page);await shop.open();
+ const quantity=page.getByRole('spinbutton',{name:'Broccoli quantity'});
+ await expect(page.getByRole('button',{name:'Decrease Broccoli'})).toBeDisabled();
+ await quantity.fill('3');await quantity.press('Tab');
+ await shop.addProduct(0);await shop.openBag();
+ await expect(quantity).toHaveValue('3');
+ await expect(page.getByTestId('order-total')).toHaveText('₹360');
+ await quantity.fill('2.5');await quantity.press('Tab');
+ await expect(quantity).toHaveValue('3');
+ await expect(page.getByText('Enter a whole-number quantity from 1 to 99. The previous quantity has been kept.')).toBeVisible();
+ await expect(page.getByTestId('order-total')).toHaveText('₹360');
+ await page.getByRole('button',{name:'Decrease Broccoli'}).click();
+ await expect(quantity).toHaveValue('2');
+ await expect(page.getByTestId('order-total')).toHaveText('₹240');
+ await quantity.fill('99');await quantity.press('Tab');
+ await expect(page.getByRole('button',{name:'Increase Broccoli'})).toBeDisabled();
+ await page.reload();await expect(quantity).toHaveValue('99');
+});

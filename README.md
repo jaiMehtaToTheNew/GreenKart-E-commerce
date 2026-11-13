@@ -42,3 +42,9 @@ Record a descriptive title, requirement, environment, reproduction steps, expect
 ## Creation verification
 
 JavaScript syntax checks and HTTP serving passed. In-app browser checks verified search, adding a product, the ₹120 → ₹108 FRESH10 discount, country selection, simulated order confirmation and cart clearing. Standalone Playwright execution was blocked before tests could run by macOS MachPort sandbox permission denial; no automated pass is claimed.
+
+## SAM1-18 — Update Product Quantity
+
+Select a whole-number quantity from 1 to 99 using the product or cart controls. The decrease button is disabled at 1 and increase at 99. Invalid direct entries show inline feedback and retain the previous quantity. Valid cart changes persist and recalculate item counts, line prices, discounts and order totals. Product selection changes apply when adding the product to the bag.
+
+Run `npm run test:unit` for quantity validation and cart-calculation checks. `tests/quantity.spec.js` covers selection, invalid cart edits, limits and reload persistence in Playwright. The existing 1–99 range is retained pending confirmation of Jira acceptance criteria.
